@@ -1,0 +1,34 @@
+﻿  cpu_c.c
+  cpu_core.c
+  lib_ascii.c
+  lib_math.c
+  lib_mem.c
+  lib_str.c
+  os_cpu_c.c
+  os_cfg_app.c
+  os_core.c
+  os_dbg.c
+  os_flag.c
+  os_mem.c
+  os_mon.c
+  os_msg.c
+  os_mutex.c
+  os_prio.c
+  os_q.c
+  os_sem.c
+  os_stat.c
+  os_task.c
+  Compiling...
+  os_tick.c
+  os_time.c
+  os_tmr.c
+  os_var.c
+  bsp_cpu.c
+  main.c
+  os_app_hooks.c
+  Generating code
+  52 of 115 functions (45.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  OS3.vcxproj -> D:\workspace\micrium\ucos-vs2017\Microsoft\Windows\Kernel\OS3\VS\Release\OS3.exe

@@ -368,7 +368,7 @@ typedef  CPU_INT32U                 CPU_SR;                     /* Defines   CPU
 
 
 #ifndef  CPU_CFG_CRITICAL_METHOD_WIN32
-#define  CPU_CFG_CRITICAL_METHOD_WIN32          WIN32_CRITICAL_SECTION
+#define  CPU_CFG_CRITICAL_METHOD_WIN32          WIN32_MUTEX
 #endif
 
 

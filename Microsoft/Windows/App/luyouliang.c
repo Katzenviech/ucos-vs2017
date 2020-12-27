@@ -1,10 +1,10 @@
-/*	 
+ï»¿/*	 
 *
 *	
 *	Last modified:	 2012-04-25 
-*   writen byÂ¬ÓĞÁÁ
-*   for book:Ç¶ÈëÊ½ÊµÊ±²Ù×÷ÏµÍ³¦ÌCOS·ÖÎöÓëÊµ¼ù
-*   2011-2012ÓÚµç×Ó¿Æ¼¼´óÑ§
+*   written by Lu Youliang
+*   for book: Analysis and Practice of Embedded Real-time Operating System Î¼COS
+*   2011-2012 At University of Electronic Science and Technology of China
 *   
 *   
 */
@@ -12,18 +12,18 @@
 #include <os.h>
 #include "luyouliang.h"
 
-BOOLEAN g_FlagEn = 1;		//Ôö¼ÓÒ»¸öÈ«¾Ö±äÁ¿£¬×öÎªÊÇ·ñÊ±ÖÓµ÷¶ÈµÄ±êÖ¾
+BOOLEAN g_FlagEn = 1;		// Add a global variable as a sign of clock scheduling
 
 OS_EVENT  *MyEventSem;
 
 int a, b, c;
 char * buffer;
-/*ÊµÑéÊ¹ÓÃµÄ´úÂë1*/
+/*Code used in the experiment 1*/
 int FirstTask(void *pParam)
 {
 	int i, j = 0;
 	int abc = 123;
-	OSTimeDly(100);//²»Ó°ÏìÍ³¼ÆÈÎÎñ³õÊ¼»¯Ê±»ñÈ¡×î´óµÄ¿ÕÏĞ¼ÆÊıÖµ
+	OSTimeDly(100);// Does not affect the maximum idle count value obtained when the statistical task is initialized
 	printf("welcome to embeded system\n");
 	printf("welcome to ucos\n");
 	printf("This is a simple task for experiment 1!\n");
@@ -32,19 +32,19 @@ int FirstTask(void *pParam)
 	{
 		for (i = 0; i<99999999; i++);
 		//OSTimeDly(100);
-		printf("ÈÎÎñÑÓÊ±£¬j=%d\n", j++);
+		printf("Task delay=%d\n", j++);
 	}
 	return(0);
 }
-/*ÊµÑéÊ¹ÓÃµÄ´úÂë2*/
+/* Code used in the experiment 2*/
 void E2_task1(void *pParam)
 {
 	int i = 0;
 	OSTimeDly(100);
-	printf("Á½¸öÈÎÎñ½»ÌæÔËĞĞ£¬E2task1,ÓÅÏÈ¼¶%d\n", OSPrioCur);
+	printf("Two tasks run alternately, E2task1, priority %d\n", OSPrioCur);
 	for (;;)
 	{
-		printf("ÓÅÏÈ¼¶Îª%dµÄÈÎÎñÊä³ö%d\n", OSPrioCur, i++);
+		printf("Task output with priority %d\n", OSPrioCur, i++);
 		OSTimeDly(100);
 	}
 }
@@ -53,28 +53,28 @@ void E2_task2(void *pParam)
 {
 	int i = 0;
 	OSTimeDly(200);
-	printf("Á½¸öÈÎÎñ½»ÌæÔËĞĞ£¬E2task2,ÓÅÏÈ¼¶%d\n", OSPrioCur);
+	printf("Two tasks run alternately, E2task2, priority %d\n", OSPrioCur);
 	for (;;)
 	{
-		printf("ÓÅÏÈ¼¶Îª%dµÄÈÎÎñÊä³ö%d\n", OSPrioCur, i++);
+		printf("Task output with priority %d\n", OSPrioCur, i++);
 		OSTimeDly(200);
 	}
 }
 
-/*ÊµÑéÊ¹ÓÃµÄ´úÂë3*/
+/* Code used in the experiment 3*/
 void E3_task0(void *pParam)
 {
 	int i = 0;
 	OSTimeDly(100);
-	printf("ÈÎÎñ0ÓÅÏÈ¼¶%d,¸ºÔğ¹ÒÆğºÍ»Ö¸´²É¼¯ÈÎÎñºÍÊı¾İ´¦ÀíÈÎÎñ\n", OSPrioCur);
+	printf("Task 0 priority %d, responsible for suspending and resuming collection tasks and data processing tasks\n", OSPrioCur);
 	for (;;)
 	{
-		printf("ÈÎÎñ0¹ÒÆğÈÎÎñ1,»Ö¸´ÈÎÎñ2£¬¹ÒÆğÊ±¼ä1Ãë\n");
+		printf("Task 0 suspend task 1, resume task 2, suspend time 1 second\n");
 		OSTaskSuspend(6);
 		OSTaskResume(7);
 		OSTimeDly(100);
 
-		printf("ÈÎÎñ0¹ÒÆğÈÎÎñ2,»Ö¸´ÈÎÎñ1£¬¹ÒÆğÊ±¼ä1Ãë\n");
+		printf("Task 0 suspends task 2, resumes task 1, and suspends for 1 second\n");
 		OSTaskSuspend(7);
 		OSTaskResume(6);
 		OSTimeDly(100);
@@ -85,10 +85,10 @@ void E3_task1(void *pParam)
 {
 	int i = 0;
 	OSTimeDly(100);
-	printf("ÈÎÎñ1ÓÅÏÈ¼¶%d\n", OSPrioCur);
+	printf("Task 1 priority %d\n", OSPrioCur);
 	for (;;)
 	{
-		printf("ÈÎÎñ1Êä³ö%d\n", i++);
+		printf("Task 1 output %d\n", i++);
 		OSTimeDly(20);
 	}
 }
@@ -96,14 +96,14 @@ void E3_task2(void *pParam)
 {
 	int i = 100;
 	OSTimeDly(100);
-	printf("ÈÎÎñ2ÓÅÏÈ¼¶%d\n", OSPrioCur);
+	printf("Task 2 priority %d\n", OSPrioCur);
 	for (;;)
 	{
-		printf("ÈÎÎñ2Êä³ö%d\n", i++);
+		printf("Task 2 output %d\n", i++);
 		OSTimeDly(30);
 	}
 }
-/*end ÊµÑéÊ¹ÓÃµÄ´úÂë3*/
+/*end Code used in the experiment 3*/
 
 
 int add1(int *p1, int *p2)
@@ -135,11 +135,11 @@ void usertask(void *pParam)
 	//	OSTimeDly(100);
 	//}
 	INT8U i = (INT8U)pParam;
-	//printf("ÓÅÏÈ¼¶Îª%dµÄÈÎÎñÊä³öºóÑÓÊ±%dÃë\n",OSPrioCur,OSPrioCur);
+	//printf("Delay %d seconds after output of tasks with priority %d\n",OSPrioCur,OSPrioCur);
 
 	for (;;)
 	{
-		printf("ÓÅÏÈ¼¶Îª%dµÄÈÎÎñÊä³ö%d\n", OSPrioCur, i++);
+		printf("Task output %d with priority %d\n", OSPrioCur, i++);
 		OSTimeDly(100);
 	}
 }
@@ -150,7 +150,7 @@ void usertask1(void *pParam)
 		//printf("\ntask%d call add2(1,2)\n",1);
 		//sum=add2(1,2);
 		OSTimeDly(OS_TICKS_PER_SEC);
-		printf("task5 after sleep,±¾ÈÎÎñµ÷¶È´ÎÊı%d,g_FlagEn=%d\n", sum++, g_FlagEn);
+		printf("task5 after sleep, The number of times this task is scheduled %d, g_FlagEn=%d\n", sum++, g_FlagEn);
 		//printf("\ntask%d call add2(1,2) solution is %d\n",1,sum);
 	}//for(;;)
 }
@@ -163,7 +163,7 @@ void usertask2(void *pParam)
 
 		OSTimeDly(OS_TICKS_PER_SEC);
 		//c=a+b;//sum=add2(100,200);
-		printf("task6 after sleep,±¾ÈÎÎñµ÷¶È´ÎÊı%d,g_FlagEn=%d\n", sum++, g_FlagEn);//printf("\ntask%d call add2(100,200) solution is %d\n",2,sum);
+		printf("task6 after sleep, The number of times this task is scheduled %d, g_FlagEn=%d\n", sum++, g_FlagEn);//printf("\ntask%d call add2(100,200) solution is %d\n",2,sum);
 	}//for(;;)
 }
 
@@ -177,11 +177,11 @@ void UsrCouPri()
 	}
 }
 
-//ĞÅºÅÁ¿¹ÜÀíµÄÀı×Ó
+// Examples of semaphore management
 void UserTaskSemA(void *pParam)
 {
-	/*ÈÎÎñSemA´´½¨ĞÅºÅÁ¿£¬È»ºóÖÜÆÚĞÔ·ÃÎÊ×ÊÔ´R*/
-	/*´´½¨ĞÅºÅÁ¿*/
+	/* The task SemA creates a semaphore and then periodically accesses the resource R */
+	/* Create semaphore */
 	INT8U     *perr;
 	INT8U err;
 	//INT8U i;
@@ -191,68 +191,68 @@ void UserTaskSemA(void *pParam)
 	MyEventSem = OSSemCreate(2);
 	if (MyEventSem == (OS_EVENT *)0)
 	{
-		printf("ÈÎÎñA´´½¨ĞÅºÅÁ¿Ê§°Ü£¡\n");
+		printf("Task A failed to create semaphore\n");
 		OSTaskDel(OS_PRIO_SELF);
 		return;
 	}
 	OSSemQuery(MyEventSem, &mySemData);
-	printf("Ê±¼ä:%d, ÈÎÎñA´´½¨ĞÅºÅÁ¿¡£µ±Ç°ĞÅºÅÁ¿Öµ=%d\n", OSTimeGet(), mySemData.OSCnt);
+	printf("Time: %d, task A creates a semaphore. Current semaphore value=%d\n", OSTimeGet(), mySemData.OSCnt);
 	while (1)
 	{
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñA¿ªÊ¼ÇëÇóĞÅºÅÁ¿£¡µ±Ç°ĞÅºÅÁ¿Öµ=%d\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, task A starts to request semaphore! Current semaphore value=%d\n", OSTimeGet(), mySemData.OSCnt);
 		OSSemPend(MyEventSem, 0, perr);
 		if (err != OS_ERR_NONE)
 		{
-			printf("ÈÎÎñAÇëÇóĞÅºÅÁ¿Ê§°Ü\n");
-			printf("´íÎóºÅ%d\n", err);
+			printf("Task A request semaphore failed\n");
+			printf("Error number %d\n", err);
 			continue;
 		}
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñA»ñµÃĞÅºÅÁ¿¡£µ±Ç°ĞÅºÅÁ¿Öµ=%d£¬ÈÎÎñA¿ªÊ¼¶ÔR²Ù×÷\n", OSTimeGet(), mySemData.OSCnt);
-		OSTimeDly(1000); /*Ä£Äâ²Ù×÷×ÊÔ´,ĞèÒª10Ãë£¬1000¸öÊ±ÖÓàÖàª*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñA½áÊø×ÊÔ´²Ù×÷£¬Ìá½»ĞÅºÅÁ¿£¡\n", OSTimeGet());
+		printf("Time: %d, task A gets the semaphore. Current semaphore value=%d, task A starts to operate on R\n", OSTimeGet(), mySemData.OSCnt);
+		OSTimeDly(1000); /* Analog operation resource, it takes 10 seconds, 1000 clock ticks */
+		printf("Time: %d, task A ends resource operation and submits semaphore! \n", OSTimeGet());
 		OSSemPost(MyEventSem);
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñAÌá½»ĞÅºÅÁ¿Íê³É£¬µ±Ç°ĞÅºÅÁ¿Öµ=%d,ÈÎÎñA½«ÑÓÊ±×èÈû1000àÖàª\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, the semaphore submitted by task A is completed, the current semaphore value=%d, task A will be blocked with a delay of 1000 ticks\n", OSTimeGet(), mySemData.OSCnt);
 		OSTimeDly(1000);
 	}
 }
 
 void UserTaskSemB(void *pParam)
 {
-	/*ÈÎÎñSemA´´½¨ĞÅºÅÁ¿£¬È»ºóÖÜÆÚĞÔ·ÃÎÊ×ÊÔ´R*/
+	/* The task SemA creates a semaphore and then periodically accesses the resource R */
 	INT8U     *perr;
 	INT8U err;
 	OS_SEM_DATA mySemData;
 	err = 0;
 	perr = &err;
-	printf("Ê±¼ä:%d,ÈÎÎñB¿ªÊ¼ÑÓÊ±300¸öÊ±ÖÓàÖàª", OSTimeGet());
-	OSTimeDly(300);/*ÈÎÎñBÏÈÑÓÊ±3Ãë*/
+	printf("Time: %d, task B starts to delay 300 clock ticks", OSTimeGet());
+	OSTimeDly(300);/* Task B is delayed for 3 seconds */
 	if (MyEventSem == (OS_EVENT *)0)
 	{
-		printf("ÈÎÎñA´´½¨ĞÅºÅÁ¿Ê§°Ü£¡\n");
+		printf("Task A failed to create semaphore\n");
 		OSTaskDel(OS_PRIO_SELF);
 		return;
 	}
 	while (1)
 	{
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñB¿ªÊ¼ÇëÇóĞÅºÅÁ¿£¡µ±Ç°ĞÅºÅÁ¿Öµ=%d\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, task B starts to request semaphore! Current semaphore value=%d\n", OSTimeGet(), mySemData.OSCnt);
 		OSSemPend(MyEventSem, 0, perr);
 		if (err != OS_ERR_NONE)
 		{
-			printf("ÈÎÎñBÇëÇóĞÅºÅÁ¿Ê§°Ü\n");
-			printf("´íÎóºÅ%d\n", err);
+			printf("Task B request semaphore failed\n");
+			printf("Error number %d\n", err);
 			continue;
 		}
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñB»ñµÃĞÅºÅÁ¿¡£µ±Ç°ĞÅºÅÁ¿Öµ=%d£¬ÈÎÎñB¿ªÊ¼¶ÔR²Ù×÷,Ğè1000¸öÊ±ÖÓàÖàª\n", OSTimeGet(), mySemData.OSCnt);
-		OSTimeDly(1000); /*Ä£Äâ²Ù×÷×ÊÔ´,ĞèÒª10Ãë£¬1000¸öÊ±ÖÓàÖàª*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñB½áÊø×ÊÔ´²Ù×÷£¬Ìá½»ĞÅºÅÁ¿£¡\n", OSTimeGet());
+		printf("Time: %d, task B gets the semaphore. Current semaphore value=%d, task B starts to operate on R, it needs 1000 clock ticks\n", OSTimeGet(), mySemData.OSCnt);
+		OSTimeDly(1000); /*Ã„Â£Ã„Ã¢Â²Ã™Ã—Ã·Ã—ÃŠÃ”Â´,ÃÃ¨Ã’Âª10ÃƒÃ«Â£Â¬1000Â¸Ã¶ÃŠÂ±Ã–Ã“Ã Ã–Ã Âª*/
+		printf("Time: %d, task B ends resource operation and submits semaphore!\n", OSTimeGet());
 		OSSemPost(MyEventSem);
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñBÌá½»ĞÅºÅÁ¿Íê³É£¬µ±Ç°ĞÅºÅÁ¿Öµ=%d,ÈÎÎñB½«ÑÓÊ±×èÈû1000àÖàª\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, the semaphore submitted by task B is completed, the current semaphore value=%d, task B will be blocked with a delay of 1000 ticks\n", OSTimeGet(), mySemData.OSCnt);
 		OSTimeDly(1000);
 	}
 }
@@ -260,42 +260,42 @@ void UserTaskSemB(void *pParam)
 
 void UserTaskSemC(void *pParam)
 {
-	/*ÈÎÎñSemA´´½¨ĞÅºÅÁ¿£¬È»ºóÖÜÆÚĞÔ·ÃÎÊ×ÊÔ´R*/
+	/* The task SemA creates a semaphore and then periodically accesses the resource R */
 	INT8U     *perr;
 	INT8U err;
 	OS_SEM_DATA mySemData;
 	err = 0;
 	perr = &err;
-	printf("Ê±¼ä:%d,ÈÎÎñC¿ªÊ¼ÑÓÊ±400¸öÊ±ÖÓàÖàª", OSTimeGet());
-	OSTimeDly(400);/*ÈÎÎñCÏÈÑÓÊ±4Ãë*/
+	printf("Time: %d, the start of task C is delayed by 400 clock ticks", OSTimeGet());
+	OSTimeDly(400);/*Task C first delay 4 seconds*/
 	if (MyEventSem == (OS_EVENT *)0)
 	{
-		printf("ÈÎÎñA´´½¨ĞÅºÅÁ¿Ê§°Ü£¡\n");
+		printf("Task A failed to create semaphore\n");
 		OSTaskDel(OS_PRIO_SELF);
 		return;
 	}
 	while (1)
 	{
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñC¿ªÊ¼ÇëÇóĞÅºÅÁ¿£¡µ±Ç°ĞÅºÅÁ¿Öµ=%d\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, task C starts to request semaphore! Current semaphore value=%d\n", OSTimeGet(), mySemData.OSCnt);
 		OSSemPend(MyEventSem, 0, perr);
 		if (err != OS_ERR_NONE)
 		{
-			printf("ÈÎÎñCÇëÇóĞÅºÅÁ¿Ê§°Ü\n");
-			printf("´íÎóºÅ%d\n", err);
+			printf("Task C request semaphore failed\n");
+			printf("Error number %d\n", err);
 			continue;
 		}
 		OSSemQuery(MyEventSem, &mySemData);
-		printf("Ê±¼ä:%d,ÈÎÎñC»ñµÃĞÅºÅÁ¿¡£µ±Ç°ĞÅºÅÁ¿Öµ=%d£¬ÈÎÎñC¿ªÊ¼¶ÔR²Ù×÷,Ğè1000¸öÊ±ÖÓàÖàª\n", OSTimeGet(), mySemData.OSCnt);
-		OSTimeDly(1000); /*Ä£Äâ²Ù×÷×ÊÔ´,ĞèÒª10Ãë£¬1000¸öÊ±ÖÓàÖàª*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñC½áÊø×ÊÔ´²Ù×÷£¬Ìá½»ĞÅºÅÁ¿£¡\n", OSTimeGet());
+		printf("Time: %d, task C gets the semaphore. Current semaphore value=%d, task C starts to operate on R, it takes 1000 clock ticks\n", OSTimeGet(), mySemData.OSCnt);
+		OSTimeDly(1000); /*Ã„Â£Ã„Ã¢Â²Ã™Ã—Ã·Ã—ÃŠÃ”Â´,ÃÃ¨Ã’Âª10ÃƒÃ«Â£Â¬1000Â¸Ã¶ÃŠÂ±Ã–Ã“Ã Ã–Ã Âª*/
+		printf("Time: %d, task C ends resource operation and submits semaphore\n", OSTimeGet());
 		OSSemPost(MyEventSem);
-		printf("Ê±¼ä:%d,ÈÎÎñCÌá½»ĞÅºÅÁ¿Íê³É£¬µ±Ç°ĞÅºÅÁ¿Öµ=%d,ÈÎÎñC½«ÑÓÊ±×èÈû1000àÖàª\n", OSTimeGet(), mySemData.OSCnt);
+		printf("Time: %d, the semaphore submitted by task C is completed, the current semaphore value=%d, task C will be blocked with a delay of 1000 ticks\n", OSTimeGet(), mySemData.OSCnt);
 		OSTimeDly(1000);
 	}
 }
 
-//ÊÂ¼ş±êÖ¾×éµÄÀı×Ó
+// Examples of event flag groups
 INT8U IO[4][10];
 OS_FLAG_GRP  * pFlagGroupDataProcess;
 void TaskDataProcess(void *pParam)
@@ -307,12 +307,12 @@ void TaskDataProcess(void *pParam)
 	err = OS_ERR_NONE;
 	perr = &err;
 	processflag = 0x0F;
-	/*´´½¨ÊÂ¼ş±êÖ¾×é,ÊÂ¼ş±êÖ¾³õÊ¼Öµ0£¬Ã»ÓĞÊÂ¼ş·¢Éú*/
+	/* Create an event flag group, the initial value of the event flag is 0, no event occurs */
 	pFlagGroupDataProcess = OSFlagCreate(0, perr);
-	/*Ê¡ÂÔÁË¼ì²éÊÇ·ñ´´½¨³É¹¦*/
+	/*Omit to check whether the creation is successful */
 	while (1)
 	{
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskDataProcess¿ªÊ¼ÇëÇóÊÂ¼ş±êÖ¾-----------£¡\n", OSTimeGet());
+		printf("Time: %d, the task TaskDataProcess starts requesting event flags-----------!\n", OSTimeGet());
 		retflag = OSFlagPend(pFlagGroupDataProcess,
 			processflag,
 			OS_FLAG_WAIT_SET_ALL + OS_FLAG_CONSUME,
@@ -322,12 +322,12 @@ void TaskDataProcess(void *pParam)
 		if (retflag == processflag)
 		{
 			SUM = 0;
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskDataProcessÇëÇóÊÂ¼ş±êÖ¾³É¹¦£¬¿ªÊ¼´¦ÀíÊı¾İ£¡\n", OSTimeGet());
+			printf("Time: %d, the task TaskDataProcess request event flag is successful, start processing data! -----------!\n", OSTimeGet());
 			for (i = 0; i<10; i++)
 			{
 				SUM += IO[0][i] + IO[1][i] + IO[2][i] + IO[3][i];
 			}
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskDataProcess´¦ÀíÊı¾İÍê³É£¬½á¹ûÎª%d:\n", OSTimeGet(), SUM);
+			printf("Time: %d, task TaskDataProcess processing data is completed, the result is %d\n", OSTimeGet(), SUM);
 		}
 	}
 }
@@ -344,17 +344,17 @@ void TaskIO1(void *pParam)
 
 	while (1)
 	{
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
-		for (i = 0; i<10; i++) /*Ä£Äâ»ñÈ¡Êı¾İµÄ¹ı³Ì*/
+		OSTimeDly(100);/*1 second delay*/
+		for (i = 0; i<10; i++) /*Simulate the process of acquiring data*/
 		{
 			IO[0][i] = 1;
 		}
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO1»ñÈ¡IOÊı¾İºó£¬×¼±¸Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»:%d\n", OSTimeGet(), rdyflag);
+		printf("Time: %d, after task TaskIO1 gets the IO data, it is ready to submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 		rdyflag = OSFlagPost(pFlagGroupDataProcess,
 			0x01,
 			OS_FLAG_SET,
-			perr);            /*Ìá½»ÊÂ¼ş±êÖ¾£¬ÖÃÎ»ÊÂ¼ş±êÖ¾×éÖĞ×îºóÒ»Î»Î»0*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO1»ñÈ¡IOÊı¾İºó£¬Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»:%d\n", OSTimeGet(), rdyflag);
+			perr);            /*Submit the event flag, set the last bit in the event flag group to 0*/
+		printf("Time: %d, after task TaskIO1 gets the IO data, submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 	}
 }
 void TaskIO2(void *pParam)
@@ -367,17 +367,17 @@ void TaskIO2(void *pParam)
 	rdyflag = 0;
 	while (1)
 	{
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
-		for (i = 0; i<10; i++) /*Ä£Äâ»ñÈ¡Êı¾İµÄ¹ı³Ì*/
+		OSTimeDly(100);/*1 second delay*/
+		for (i = 0; i<10; i++) /*Simulate the process of acquiring data*/
 		{
 			IO[1][i] = 2;
 		}
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO2»ñÈ¡IOÊı¾İºó£¬×¼±¸Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»:%d\n", OSTimeGet(), rdyflag);
+		printf("Time: %d, after task TaskIO2 gets the IO data, it is ready to submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 		rdyflag = OSFlagPost(pFlagGroupDataProcess,
 			0x02,
 			OS_FLAG_SET,
-			perr);            /*Ìá½»ÊÂ¼ş±êÖ¾£¬ÖÃÎ»ÊÂ¼ş±êÖ¾×éÖĞÎ»1*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO2»ñÈ¡IOÊı¾İºó£¬Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»:%d\n", OSTimeGet(), rdyflag);
+			perr);            /* Submit the event flag, set bit 1 in the event flag group */
+		printf("Time: %d, after task TaskIO2 gets the IO data, submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 	}
 }
 void TaskIO3(void *pParam)
@@ -390,17 +390,17 @@ void TaskIO3(void *pParam)
 	rdyflag = 0;
 	while (1)
 	{
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
-		for (i = 0; i<10; i++) /*Ä£Äâ»ñÈ¡Êı¾İµÄ¹ı³Ì*/
+		OSTimeDly(100);/*1 second delay*/
+		for (i = 0; i<10; i++) /*Simulate the process of acquiring data*/
 		{
 			IO[2][i] = 3;
 		}
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO3»ñÈ¡IOÊı¾İºó£¬×¼±¸Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»£º%d\n", OSTimeGet(), rdyflag);
+		printf("Time: %d, after task TaskIO3 gets the IO data, it is ready to submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 		rdyflag = OSFlagPost(pFlagGroupDataProcess,
 			0x04,
 			OS_FLAG_SET,
-			perr);            /*Ìá½»ÊÂ¼ş±êÖ¾£¬ÖÃÎ»ÊÂ¼ş±êÖ¾×éÖĞÎ»2*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO3»ñÈ¡IOÊı¾İºó£¬Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»£º%d\n", OSTimeGet(), rdyflag);
+			perr);            /* Submit the event flag, set bit 2 in the event flag group */
+		printf("Time: %d, after task TaskIO3 gets the IO data, submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 	}
 }
 void TaskIO4(void *pParam)
@@ -413,21 +413,21 @@ void TaskIO4(void *pParam)
 	rdyflag = 0;
 	while (1)
 	{
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
-		for (i = 0; i<10; i++) /*Ä£Äâ»ñÈ¡Êı¾İµÄ¹ı³Ì*/
+		OSTimeDly(100);/*1 second delay*/
+		for (i = 0; i<10; i++) /*Simulate the process of acquiring data*/
 		{
 			IO[3][i] = 3;
 		}
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO4»ñÈ¡IOÊı¾İºó£¬×¼±¸Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»£º%d\n", OSTimeGet(), rdyflag);
+		printf("Time: %d, after task TaskIO4 gets the IO data, it is ready to submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 		rdyflag = OSFlagPost(pFlagGroupDataProcess,
 			0x08,
 			OS_FLAG_SET,
-			perr);            /*Ìá½»ÊÂ¼ş±êÖ¾£¬ÖÃÎ»ÊÂ¼ş±êÖ¾×éÖĞÎ»3*/
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskIO4»ñÈ¡IOÊı¾İºó£¬Ìá½»ÊÂ¼ş£¬µ±Ç°ÊÂ¼ş±êÖ¾Î»£º%d\n", OSTimeGet(), rdyflag);
+			perr);            /*Submit the event flag, set bit 3 in the event flag group*/
+		printf("Time: %d, after task TaskIO4 gets the IO data, submit the event, the current event flag: %d\n", OSTimeGet(), rdyflag);
 	}
 }
 
-/*MutexÀı×Ó³ÌĞò£¬Ê¹ÓÃÓÅÏÈ¼¶·´×ª*/
+/* Mutex example program, using priority inversion */
 OS_EVENT  *myMutex;
 void TaskMutex1(void *pParam)
 {
@@ -438,40 +438,40 @@ void TaskMutex1(void *pParam)
 	err = OS_ERR_NONE;
 
 
-	myMutex = OSMutexCreate(3, perr);/*´´½¨»¥³âĞÅºÅÁ¿£¬ÓÅÏÈ¼¶¼Ì³ĞÓÅÏÈ¼¶PIPÎª9*/
-	if (myMutex == (OS_EVENT  *)0)   /*¼ì²éÊÇ·ñ´´½¨³É¹¦*/
+	myMutex = OSMutexCreate(3, perr);/* Create mutually exclusive semaphore, priority inheritance priority PIP is 9 */
+	if (myMutex == (OS_EVENT  *)0)   /* Check if the creation is successful*/
 	{
-		printf("Ê±¼ä:%d£¬¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1´´½¨»¥³âĞÅºÅÁ¿Ê§°Ü,Ê§°ÜºÅ%d:\n", OSTimeGet(), *perr);
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, high priority task TaskMutex1 failed to create mutex semaphore, failure number %d\n", OSTimeGet(), *perr);
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
-	printf("Ê±¼ä:%d£¬¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1´´½¨»¥³âĞÅºÅÁ¿³É¹¦.\n", OSTimeGet());
-	OSTimeDly(100);/*ÑÓÊ±1Ãë*/
-	printf("Ê±¼ä:%d£¬¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1ÇëÇó»¥³âĞÅºÅÁ¿.\n", OSTimeGet());
-	OSMutexPend(myMutex, 0, perr);/*µÈ´ı»¥³âĞÅºÅÁ¿*/
-	printf("Ê±¼ä:%d£¬¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1»ñµÃ»¥³âĞÅºÅÁ¿.\n", OSTimeGet());
+	printf("Time: %d, the high priority task TaskMutex1 successfully created the mutex semaphore.\n", OSTimeGet());
+	OSTimeDly(100);/*1 second delay*/
+	printf("Time: %d, high priority task TaskMutex1 requests a mutex semaphore.\n", OSTimeGet());
+	OSMutexPend(myMutex, 0, perr);/*ÂµÃˆÂ´Ã½Â»Â¥Â³Ã¢ÃÃ…ÂºÃ…ÃÂ¿*/
+	printf("Time: %d, the high-priority task TaskMutex1 gets the mutex semaphore.\n", OSTimeGet());
 	if (*perr == OS_ERR_NONE)
 	{
 
 		for (i = 1; i <= 5; i++)
 		{
-			printf("Ê±¼ä%d:¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1Ïò´®¿ÚÊä³öÊı¾İ%d\n", OSTimeGet(), i);  /*Ä£Äâ²Ù×÷IO*/
-			for (j = 1; j <= 9999999; j++);	 /*Ä£Äâ²Ù×÷´®¿Ú*/
+			printf("Time %d: High priority task TaskMutex1 outputs data to the serial port %d\n", OSTimeGet(), i);  /*Analog operation IO*/
+			for (j = 1; j <= 9999999; j++);	 /*Ã„Â£Ã„Ã¢Â²Ã™Ã—Ã·Â´Â®Â¿Ãš*/
 		}
 	}
 	else
 	{
-		printf("Ê±¼ä:%d£¬¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1ÇëÇóĞÅºÅÁ¿Ê§°Ü,Ê§°ÜºÅ%d:\n", OSTimeGet(), *perr);
+		printf("Time: %d, high priority task TaskMutex1 request semaphore failed, failure number %d\n", OSTimeGet(), *perr);
 	}
 	OSMutexPost(myMutex);
 	for (i = 1; i <= 5; i++)
 	{
 
-		printf("Ê±¼ä%d:¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1Ö´ĞĞÌá½»ĞÅºÅÁ¿ºóÖ´ĞĞÆäËû²Ù×÷%d\n", OSTimeGet(), i);	/*Ä£Äâ²Ù×÷IO*/
-		for (j = 1; j <= 99999999; j++);	 /*ÑÓÊ±,±íÊ¾ÔÚ²Ù×÷´®¿Ú*/
+		printf("Time %d: High priority task TaskMutex1 performs other operations after executing the submitted semaphore%d\n", OSTimeGet(), i);	/*Analog operation IO*/
+		for (j = 1; j <= 99999999; j++);	 /*Ã‘Ã“ÃŠÂ±,Â±Ã­ÃŠÂ¾Ã”ÃšÂ²Ã™Ã—Ã·Â´Â®Â¿Ãš*/
 	}
-	printf("¸ßÓÅÏÈ¼¶ÈÎÎñTaskMutex1½áÊøÔËĞĞ£¬É¾³ı×Ô¼º\n");
-	OSTaskDel(OS_PRIO_SELF); /*É¾³ı±¾ÈÎÎñ*/
+	printf("The high priority task TaskMutex1 ends running and deletes itself\n");
+	OSTaskDel(OS_PRIO_SELF); /*Delete this task*/
 	return;
 
 }
@@ -482,38 +482,38 @@ void TaskMutex2(void *pParam)
 	INT32U j;
 	perr = &err;
 	err = OS_ERR_NONE;
-	if (myMutex == (OS_EVENT  *)0)	 /*¼ì²éÊÇ·ñÓĞ±»´´½¨µÄ»¥³âĞÅºÅÁ¿*/
+	if (myMutex == (OS_EVENT  *)0)	 /*Check if there is a mutex semaphore created*/
 	{
-		printf("Ê±¼ä:%d£¬»¥³âĞÅºÅÁ¿Î´´´½¨", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*É¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, the mutex semaphore is not created", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*Delete this task*/
 		return;
 	}
-	OSTimeDly(90);/*ÑÓÊ±²»µ½1Ãë*/
-	printf("Ê±¼ä:%d£¬µÍÓÅÏÈ¼¶ÈÎÎñTaskMutex2ÇëÇó»¥³âĞÅºÅÁ¿\n", OSTimeGet());
-	OSMutexPend(myMutex, 0, perr);/*µÈ´ı»¥³âĞÅºÅÁ¿*/
-	printf("Ê±¼ä:%d£¬ÈÎÎñTaskMutex2»ñµÃ»¥³âĞÅºÅÁ¿\n", OSTimeGet());
+	OSTimeDly(90);/* Delay is less than 1 second*/
+	printf("Time: %d, low priority task TaskMutex2 request mutex semaphore\n", OSTimeGet());
+	OSMutexPend(myMutex, 0, perr);/*Waiting for mutually exclusive semaphore*/
+	printf("Time: %d, task TaskMutex2 gets the mutex semaphore\n", OSTimeGet());
 	if (*perr == OS_ERR_NONE)
 	{
-		printf("Ê±¼ä:%d£¬µÍÓÅÏÈ¼¶ÈÎÎñTaskMutex2»ñµÃ»¥³âĞÅºÅÁ¿\n", OSTimeGet());
+		printf("Time: %d, the low priority task TaskMutex2 obtains the mutually exclusive semaphore\n", OSTimeGet());
 		for (i = 1; i <= 5; i++)
 		{
 
-			printf("Ê±¼ä%d:µÍÓÅÏÈ¼¶TaskMutex2Ïò´®¿ÚÊä³öÊı¾İ%d\n", OSTimeGet(), i);  /*Ä£Äâ²Ù×÷IO*/
-			for (j = 1; j <= 99999999; j++);   /*Ä£Äâ²Ù×÷´®¿Ú*/
+			printf("Time %d: Low priority TaskMutex2 outputs data to the serial port %d\n", OSTimeGet(), i);  /* Analog operation IO */
+			for (j = 1; j <= 99999999; j++);   /* Simulate operation serial port */
 		}
 	}
 	else
 	{
-		printf("Ê±¼ä:%d£¬µÍÓÅÏÈ¼¶ÈÎÎñTaskMutex2ÇëÇóĞÅºÅÁ¿Ê§°Ü,Ê§°ÜºÅ:%d\n", OSTimeGet(), *perr);
+		printf("Time: %d, low priority task TaskMutex2 request semaphore failed, failure number: %d\n", OSTimeGet(), *perr);
 	}
 	OSMutexPost(myMutex);
 	for (i = 1; i <= 5; i++)
 	{
-		printf("Ê±¼ä%d:µÍÓÅÏÈ¼¶TaskMutex2Ö´ĞĞÌá½»ĞÅºÅÁ¿ºóÖ´ĞĞÆäËû²Ù×÷%d\n", OSTimeGet(), i);  /*Ä£Äâ²Ù×÷IO*/
-		for (j = 1; j <= 99999999; j++);   /*ÑÓÊ±,±íÊ¾ÔÚ²Ù×÷´®¿Ú*/
+		printf("Time %d: Low priority TaskMutex2 performs other operations after executing the submitted semaphore%d\n", OSTimeGet(), i);  /*Analog operation IO*/
+		for (j = 1; j <= 99999999; j++);   /*Ã‘Ã“ÃŠÂ±,Â±Ã­ÃŠÂ¾Ã”ÃšÂ²Ã™Ã—Ã·Â´Â®Â¿Ãš*/
 	}
-	printf("µÍÓÅÏÈ¼¶ÈÎÎñTaskMutex2½áÊøÔËĞĞ£¬É¾³ı×Ô¼º\n");
-	OSTaskDel(OS_PRIO_SELF); /*É¾³ı±¾ÈÎÎñ*/
+	printf("The low priority task TaskMutex2 ends running and deletes itself\n");
+	OSTaskDel(OS_PRIO_SELF); /*Delete this task*/
 	return;
 }
 
@@ -528,14 +528,14 @@ void TaskPrint(void *pParam)
 	OSTimeDly(95);
 	for (i = 1; i <= 5; i++)
 	{
-		printf("Ê±¼ä%d:ÖĞÓÅÏÈ¼¶ÈÎÎñTaskPrintÔÚÔËĞĞÖĞ£¬´òÓ¡Êı¾İ%d\n", OSTimeGet(), i++);  /*Ä£Äâ²Ù×÷IO*/
-		for (j = 1; j <= 99999999; j++);   /*Ä£Äâ½øĞĞ´òÓ¡²Ù×÷*/
+		printf("Time %d: Medium priority task TaskPrint is running, printing data %d\n", OSTimeGet(), i++);  /*Analog operation IO*/
+		for (j = 1; j <= 99999999; j++);   /* Simulate printing operation */
 	}
-	printf("ÖĞÓÅÏÈ¼¶ÈÎÎñTaskPrint½áÊøÔËĞĞ£¬É¾³ı×Ô¼º\n");
-	OSTaskDel(OS_PRIO_SELF); /*É¾³ı±¾ÈÎÎñ*/
+	printf("The medium priority task TaskPrint finishes running and deletes itself\n");
+	OSTaskDel(OS_PRIO_SELF); /*Delete this task*/
 }
 
-//ÏûÏ¢ÓÊÏäµÄÀı×Ó
+// Message mailbox example
 OS_EVENT  *myMBox;
 void TaskMessageSen(void *pParam)
 {
@@ -551,20 +551,20 @@ void TaskMessageSen(void *pParam)
 
 	a[1] = 5;
 	a[3] = 6;
-	myMBox = OSMboxCreate(&scount);/*´´½¨ÓÊÏä£¬*/
-	if (myMBox == (OS_EVENT  *)0)   /*¼ì²éÊÇ·ñ´´½¨³É¹¦*/
+	myMBox = OSMboxCreate(&scount);/* Create a mailbox, */
+	if (myMBox == (OS_EVENT  *)0)   /*Check if the creation is successful*/
 	{
-		printf("Ê±¼ä:%d£¬ TaskMessageSen´´½¨ÓÊÏäÊ§°Ü\n", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, TaskMessageSen failed to create mailbox\n", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
-	printf("Ê±¼ä:%d£¬ TaskMessageSen´´½¨ÓÊÏä³É¹¦\n", OSTimeGet());
+	printf("Time: %d, TaskMessageSen successfully created the mailbox\n", OSTimeGet());
 	while (1)
 	{
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
+		OSTimeDly(100);/*1 second delay*/
 		scount++;
-		printf("Ê±¼ä:%d£¬ÈÎÎñTTaskMessageSen×¼±¸·¢ÏûÏ¢£¬ÏûÏ¢Îª%d\n", OSTimeGet(), scount);
-		OSMboxPost(myMBox, &scount); /*·¢ÏûÏ¢*/
+		printf("Time: %d, task TaskMessageSend is ready to send a message, the message is %d\n", OSTimeGet(), scount);
+		OSMboxPost(myMBox, &scount); /* Send message */
 	}
 }
 void TaskMessageRec(void *pParam)
@@ -575,45 +575,45 @@ void TaskMessageRec(void *pParam)
 	perr = &err;
 	err = OS_ERR_NONE;
 
-	if (myMBox == (OS_EVENT  *)0)   /*¼ì²éÓÊÏäÊÇ·ñ´æÔÚ*/
+	if (myMBox == (OS_EVENT  *)0)   /*Check if the mailbox exists*/
 	{
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskMessageRecÅĞ¶¨ÓÊÏä²»´æÔÚ!\n", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, task TaskMessageRec judged that the mailbox does not exist!\n", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
 
 	while (1)
 	{
-		prcount = (INT32U *)OSMboxPend(myMBox, 0, perr); /*ÇëÇóÏûÏ¢£¬Èç¹ûÏûÏ¢²»´æÔÚ¾Í×èÈû*/
+		prcount = (INT32U *)OSMboxPend(myMBox, 0, perr); /* Request message, block if the message does not exist */
 		if (*perr == OS_ERR_NONE)
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskMessageRec½ÓÊÕÏûÏ¢Îª%d\n", OSTimeGet(), *prcount);
+			printf("Time: %d, task TaskMessageRec received message as %d\n", OSTimeGet(), *prcount);
 		else
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskMessageRecµÈ´ıÒì³£½áÊø£¬´íÎóºÅ:%d\n", OSTimeGet(), *perr);
+			printf("Time: %d, task TaskMessageRec waited for abnormal end, error number: %d\n", OSTimeGet(), *perr);
 	}
 }
 
-//ÏûÏ¢¶ÓÁĞµÄÀı×Ó
+// Example of message queue
 OS_EVENT  *myQ;
 void TaskQSen(void *pParam)
 {
 	INT8U     *perr;
 	INT8U err, i;
 	INT8U scount;
-	OS_Q_DATA myQData; /*ÏûÏ¢¶ÓÁĞÊı¾İ*/
-	void * myq[6]; /*ÏûÏ¢¶ÓÁĞ*/
+	OS_Q_DATA myQData; /*Message queue data*/
+	void * myq[6]; /*message queue*/
 	INT8U mymessage[256];
 	perr = &err;
 	err = OS_ERR_NONE;
 	scount = 0;
 
-	myQ = OSQCreate(myq, 6);/*´´½¨ÏûÏ¢¶ÓÁĞ£¬Èİ»ıÎª6*/
-	if (myQ == (OS_EVENT  *)0)   /*¼ì²éÊÇ·ñ´´½¨³É¹¦*/
+	myQ = OSQCreate(myq, 6);/*Create a message queue with a volume of 6*/
+	if (myQ == (OS_EVENT  *)0)   /*Check if the creation is successful*/
 	{
-		printf("Ê±¼ä:%d£¬ TaskQSen´´½¨ÏûÏ¢¶ÓÁĞÊ§°Ü\n", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, TaskQSen failed to create a message queue\n", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
-	printf("Ê±¼ä:%d£¬ TaskQSen´´½¨ÏûÏ¢¶ÓÁĞ³É¹¦\n", OSTimeGet());
+	printf("Time: %d, TaskQSen successfully created the message queue\n", OSTimeGet());
 	for (i = 0; i <= 254; i++)
 		mymessage[i] = i;
 	mymessage[255] = i;
@@ -621,20 +621,20 @@ void TaskQSen(void *pParam)
 	{
 		OSTimeDly(100);
 
-		printf("Ê±¼ä:%d£¬ÈÎÎñTTaskQSen×¼±¸·¢ÏûÏ¢£¬ÏûÏ¢Îª%d\n", OSTimeGet(), mymessage[scount]);
-		err = OSQPost(myQ, &mymessage[scount]); /*·¢ÏûÏ¢*/
+		printf("Time: %d, task TTaskQSen is ready to send a message, the message is %d\n", OSTimeGet(), mymessage[scount]);
+		err = OSQPost(myQ, &mymessage[scount]); /*Send message*/
 		switch (err) {
 		case OS_ERR_Q_FULL:
-			printf("Ê±¼ä:%d£¬ÈÎÎñTTaskQSen·¢ÏûÏ¢Ê§°Ü£¬ÏûÏ¢¶ÓÁĞÒÑÂú\n", OSTimeGet());
+			printf("Time: %d, task TTaskQSen failed to send a message, the message queue is full\n", OSTimeGet());
 			break;
 		case OS_ERR_NONE:
-			printf("Ê±¼ä:%d£¬ÈÎÎñTTaskQSen·¢ÏûÏ¢³É¹¦\n", OSTimeGet());
+			printf("Time: %d, task TTaskQSen sent a message successfully\n", OSTimeGet());
 			break;
 		default:
-			printf("Ê±¼ä:%d£¬ÈÎÎñTTaskQSen·¢ÏûÏ¢Ê§°Ü£¬´íÎóºÅ£º%d\n", OSTimeGet(), err);
+			printf("Time: %d, task TTaskQSen failed to send message, error number:%d\n", OSTimeGet(), err);
 		}
 		OSQQuery(myQ, &myQData);
-		printf("Ê±¼ä:%d£¬µ±Ç°¶ÓÁĞÖĞÏûÏ¢ÊıÁ¿£º%d\n", OSTimeGet(), myQData.OSNMsgs);
+		printf("Time: %d, the number of messages in the current queue: %d\n", OSTimeGet(), myQData.OSNMsgs);
 		scount++;
 	}
 }
@@ -645,61 +645,60 @@ void TaskQRec(void *pParam)
 	INT8U err;
 	INT8U rcount;
 	INT8U rec;
-	OS_Q_DATA myQData; /*ÏûÏ¢¶ÓÁĞÊı¾İ*/
+	OS_Q_DATA myQData; /*Message queue data*/
 					   //INT8U mymessage[256];
 	perr = &err;
 	err = OS_ERR_NONE;
 	rcount = 0;
 
 
-	if (myQ == (OS_EVENT  *)0)   /*¼ì²éÏûÏ¢¶ÓÁĞÊÇ·ñ´æÔÚ*/
+	if (myQ == (OS_EVENT  *)0)   /*Check if the message queue exists*/
 	{
-		printf("Ê±¼ä:%d£¬ TaskQRecÅĞ¶¨ÏûÏ¢¶ÓÁĞ²»´æÔÚ\n", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, TaskQRec determined that the message queue does not exist\n", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
 	while (1)
 	{
 		OSTimeDly(200);
-		printf("Ê±¼ä:%d£¬ÈÎÎñTaskQRec¿ªÊ¼µÈ´ıÏûÏ¢\n", OSTimeGet());
+		printf("Time: %d, task TaskQRec started waiting for messages\n", OSTimeGet());
 		rec = *(INT8U *)OSQPend(myQ, 0, perr);
 		switch (err) {
 		case OS_ERR_NONE:
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskQRec½ÓÊÕµ½ÏûÏ¢%d\n", OSTimeGet(), rec);
+			printf("Time: %d, task TaskQRec received message %d\n", OSTimeGet(), rec);
 			break;
 		default:
-			printf("Ê±¼ä:%d£¬ÈÎÎñTTaskMessageSen·¢ÏûÏ¢Ê§°Ü£¬´íÎóºÅ£º%d\n", OSTimeGet(), err);
+			printf("Time: %d, task TTaskMessageSen failed to send message, error number: %d\n", OSTimeGet(), err);
 		}
 		OSQQuery(myQ, &myQData);
 		if (rec == 4)
 			printf("4\n");
-		printf("Ê±¼ä:%d£¬µ±Ç°¶ÓÁĞÖĞÏûÏ¢ÊıÁ¿£º%d\n", OSTimeGet(), myQData.OSNMsgs);
+		printf("Time: %d, the number of messages in the current queue: %d\n", OSTimeGet(), myQData.OSNMsgs);
 	}
 }
 
-//ÄÚ´æ¹ÜÀíµÄÀı×Ó
-
+//Examples of memory management
 void TaskM(void *pParam)
 {
 
 	INT8U *perr;
 	INT8U err, i;
-	OS_MEM  *pmyMem;     //MCB¿éµØÖ·
-	INT8U myMem[3][20]; //ÓÃÀ´×öÄÚ´æ·ÖÇø
-	void    *pblk[10];   //ÄÚ´æ¿éµØÖ·Êı×é
+	OS_MEM  *pmyMem;     //MCB block address
+	INT8U myMem[3][20]; //Used as memory partition
+	void    *pblk[10];   //Memory block address array
 	BOOLEAN require;
-	OS_MEM_DATA mem_data;//ÓÃÓÚ²éÑ¯ÄÚ´æ¿éĞÅÏ¢
+	OS_MEM_DATA mem_data;//Used to query memory block information
 	err = OS_ERR_NONE;
 	perr = &err;
 	require = 1;
-	pmyMem = OSMemCreate(myMem, 3, 20, perr);/*´´½¨ÄÚ´æ·ÖÇø£¬10¸ö¿é, Ã¿¸ö¿é20¸ö×Ö½Ú*/
-	if (pmyMem == (OS_MEM  *)0)   /*¼ì²éÊÇ·ñ´´½¨³É¹¦*/
+	pmyMem = OSMemCreate(myMem, 3, 20, perr);/*Create memory partition, 10 blocks, 20 bytes each*/
+	if (pmyMem == (OS_MEM  *)0)   /*Check if the creation is successful*/
 	{
-		printf("Ê±¼ä:%d£¬ TaskM´´½¨ÄÚ´æ·ÖÇøÊ§°Ü\n", OSTimeGet());
-		OSTaskDel(OS_PRIO_SELF); /*²»³É¹¦ÔòÉ¾³ı±¾ÈÎÎñ*/
+		printf("Time: %d, TaskM failed to create memory partition\n", OSTimeGet());
+		OSTaskDel(OS_PRIO_SELF); /*If unsuccessful, delete this task*/
 		return;
 	}
-	printf("Ê±¼ä:%d£¬ TaskM´´½¨ÄÚ´æ·ÖÇø³É¹¦£¬°üº¬10¸ö¿é, Ã¿¸ö¿é20¸ö×Ö½Ú\n", OSTimeGet());
+	printf("Time: %d, TaskM successfully created the memory partition, containing 10 blocks, each with 20 bytes\n", OSTimeGet());
 	i = 0;
 	while (1)
 	{
@@ -708,45 +707,45 @@ void TaskM(void *pParam)
 			i = 0;
 			require = !require;
 		}
-		//printf("Ê±¼ä:%d£¬i=%d\n",OSTimeGet(),i);
-		OSTimeDly(100);/*ÑÓÊ±1Ãë*/
+		//printf("time:%dÂ£Â¬i=%d\n",OSTimeGet(),i);
+		OSTimeDly(100);/*1 second delay*/
 		if (require)
 		{
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskM×¼±¸ÇëÇóÒ»¸ö¿é->", OSTimeGet());
-			pblk[i++] = OSMemGet(pmyMem, perr); /*ÇëÇóÄÚ´æ¿é*/
+			printf("Time: %d, task TaskM is ready to request a block ->", OSTimeGet());
+			pblk[i++] = OSMemGet(pmyMem, perr); /*Request memory block*/
 			switch (err) {
 			case OS_ERR_MEM_NO_FREE_BLKS:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM·¢ÇëÇóÄÚ´æ¿éÊ§°Ü£¬·ÖÇøÖĞÒÑÎŞ¿ÉÓÃÄÚ´æ¿é£¡\n", OSTimeGet());
+				printf("Time: %d, task TaskM failed to request a memory block, and there is no free memory block in the partition!\n", OSTimeGet());
 				break;
 			case OS_ERR_NONE:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM»ñµÃÄÚ´æ¿é\n", OSTimeGet());
+				printf("Time: %d, task TaskM gets the memory block\n", OSTimeGet());
 				break;
 			default:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM·¢ÇëÇóÄÚ´æ¿éÊ§°Ü£¬´íÎóºÅ£º%d\n", OSTimeGet(), err);
+				printf("Time: %d, task TaskM failed to request memory block, error number:%d\n", OSTimeGet(), err);
 			}
 		}
 		else
 		{
-			printf("Ê±¼ä:%d£¬ÈÎÎñTaskM×¼±¸ÊÍ·ÅÒ»¸ö¿é->", OSTimeGet());
-			err = OSMemPut(pmyMem, pblk[i++]); /*ÇëÇóÄÚ´æ¿é*/
+			printf("Time: %d, task TaskM is ready to release a block ->", OSTimeGet());
+			err = OSMemPut(pmyMem, pblk[i++]); /*Request memory block*/
 			switch (err) {
 			case OS_ERR_MEM_FULL:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM·¢ÇëÇóÄÚ´æ¿éÊ§°Ü£¬·ÖÇøÒÑÂú£¡\n", OSTimeGet());
+				printf("Time: %d, task TaskM failed to request memory block, the partition is full!\n", OSTimeGet());
 				break;
 			case OS_ERR_MEM_INVALID_PBLK:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM·¢ÊÍ·ÅÄÚ´æ¿éÊ§°Ü£¬ÊÍ·ÅÎŞĞ§µÄÄÚ´æ¿é£¡\n", OSTimeGet());
+				printf("Time: %d, the task TaskM failed to release the memory block, and the invalid memory block was released!\n", OSTimeGet());
 				break;
 			case OS_ERR_NONE:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskM³É¹¦ÊÍ·ÅÄÚ´æ¿é\n", OSTimeGet());
+				printf("Time: %d, task TaskM successfully released the memory block\n", OSTimeGet());
 				break;
 			default:
-				printf("Ê±¼ä:%d£¬ÈÎÎñTaskMÊÍ·ÅÄÚ´æ¿éÊ§°Ü£¬´íÎóºÅ£º%d\n", OSTimeGet(), err);
+				printf("Time: %d, task TaskM failed to release memory block, error number: %d\n", OSTimeGet(), err);
 			}
 
 		}
 		OSMemQuery(pmyMem, &mem_data);
-		printf("Ê±¼ä:%d£¬µ±Ç°·ÖÇøÖĞµÄÒÑÓÃÄÚ´æ¿éÊıÁ¿£º%d\n", OSTimeGet(), mem_data.OSNUsed);
-		printf("Ê±¼ä:%d£¬µ±Ç°·ÖÇøÖĞµÄ¿ÕÏĞÄÚ´æ¿éÊıÁ¿£º%d\n", OSTimeGet(), mem_data.OSNFree);
+		printf("Time: %d, the number of used memory blocks in the current partition: %d\n", OSTimeGet(), mem_data.OSNUsed);
+		printf("Time: %d, the number of free memory blocks in the current partition: %d\n", OSTimeGet(), mem_data.OSNFree);
 	}
 }
 

@@ -1,1 +1,28 @@
-﻿
+﻿  cpu_core.c
+  cpu_c.c
+  lib_ascii.c
+  lib_math.c
+  lib_mem.c
+  lib_str.c
+  os_cpu_c.c
+  os_core.c
+  os_dbg_r.c
+  os_flag.c
+  os_mbox.c
+  os_mem.c
+  os_mutex.c
+  os_q.c
+  os_sem.c
+  os_task.c
+  os_time.c
+  os_tmr.c
+  bsp_cpu.c
+  loader.c
+  Generating Code...
+  Compiling...
+  luyouliang.c
+  usercode.c
+  app_hooks.c
+  main.c
+  Generating Code...
+  OS2.vcxproj -> D:\workspace\micrium\ucos-vs2017\Microsoft\Windows\Kernel\OS2\VS\Debug\OS2.exe

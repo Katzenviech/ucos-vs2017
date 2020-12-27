@@ -1,48 +1,47 @@
 # μC/OS-II for Visual Studio 2017
 
-修改自Micrium官网适配给VS2017源码，加入卢有亮的《嵌入式实时操作系统μC/OS原理与实践》移植代码中的实验例子。
+Modified from Micrium's official website to adapt to the VS2017 source code, and added the experimental example in the transplantation code of "Embedded Real-time Operating System μC/OS Principles and Practice" by Lu Youliang.
 
-## 包含的 MICRIUM 产品版本
+## Included MICRIUM product version
 
 - uC/OS-II  v2.92.13 
 - uC/OS-III v3.06.02
 - uC/CPU    v1.31.01
 - uC/LIB    v1.38.02
  
-## IDE 环境要求
+## IDE Environmental requirements
 
 - Visual Studio v2017
  
-## VS解决方案文件路径
+## VSSolution file path
 
 - Microsoft/Windows/Kernel/OS2/VS/OS2.sln
 - Microsoft/Windows/Kernel/OS3/VS/OS3.sln
  
-## 使用说明
+## Instructions for use
 
-1. 在 Visual Studio 打开上面路径的文件
-2. 在项目上点右键，清理已编译的文件
-3. 修改`Windows SDK Version`为可用的版本，比如`10.0.17134.0`
-4. 编译并运行
+1. Open the file in the above path in Visual Studio
+2. Right-click on the project to clean up the compiled files
+3. Modify `Windows SDK Version` to the available version, such as `10.0.18362.0`
+4. Compile and run
 
 ![vs2017 sdk](./media/vs2017_sdk.png)
 
-## 原始链接
+## Original link
 
 <https://www.micrium.com/download/micrium_win32_kernel/>
 
 
-## 移植实现概述
+## Overview of porting implementation
 
-> 注意以下代码做了大量删改，仅保留主线部分
+> Note that the following code has been extensively deleted, and only the main line part is retained
 
-### 时间片
+### Time slice
 
-时间片依赖于定时器对响应代码的定期唤醒。  
-传统硬件平台的定时器来源是硬件定时器，软件模拟定时器来源是Windows Multimedia API提供的服务中的`timeSetEvent`。  
-Windows Multimedia API的入口在`winmm.dll`，因此工程环境应该引入这个动态库的依赖。  
-
-位于`os_cpu_c.c`中的`OSInitHookBegin()`
+The time slice relies on the timer to periodically wake up the response code.
+The source of the timer of the traditional hardware platform is the hardware timer, and the source of the software analog timer is the `timeSetEvent` in the service provided by the Windows Multimedia API.
+The entrance of Windows Multimedia API is in `winmm.dll`, so the project environment should introduce the dependency of this dynamic library.
+`OSInitHookBegin()` located in `os_cpu_c.c`
 
 ```c
 void  OSInitHookBegin (void)
@@ -50,37 +49,37 @@ void  OSInitHookBegin (void)
 
     ...
 
-    // 将OSTickW32绑定到一个线程上，并把线程ID写到OSTick_ThreadId
+// Bind OSTickW32 to a thread and write the thread ID to OSTick_ThreadId
     OSTick_Thread = CreateThread(NULL, 0, OSTickW32, 0, CREATE_SUSPENDED, &OSTick_ThreadId);
 
-    //在整个进程里这个线程能被最优先运行，时间片服务能够被及时运行
+    //This thread can be run first in the entire process, and the time slice service can be run in time
     SetThreadPriority(OSTick_Thread, THREAD_PRIORITY_HIGHEST);
 
-    //设定的OSTick_TimerCap应该大于等于winmm提供的最大时间精度（最小时间间隔）
-    if (OSTick_TimerCap.wPeriodMin < WIN_MM_MIN_RES) {
+    //The set OSTick_TimerCap should be greater than or equal to the maximum time accuracy provided by winmm (minimum time interval)
+    if (OSTick_TimerCap.wPeriodMin <WIN_MM_MIN_RES) {
         OSTick_TimerCap.wPeriodMin = WIN_MM_MIN_RES;
     }
 
-    // 设置这个精度
-    timeBeginPeriod(OSTick_TimerCap.wPeriodMin)；
+    // set this precision
+    timeBeginPeriod(OSTick_TimerCap.wPeriodMin);
 
-    // 创建事件，可以理解为通知，通过setEvent给等待这个事件/通知的线程设置为可运行
+    // Create an event, which can be understood as a notification, and set the thread waiting for this event/notification as runnable through setEvent
     OSTick_SignalPtr = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    // 设置循环定时触发的周期，精度，触发时操作OSTick_SignalPtr
-    OSTick_TimerId = timeSetEvent((UINT          )(1000u / OS_TICKS_PER_SEC),
-                                (UINT          ) OSTick_TimerCap.wPeriodMin,
+    // Set the cycle, precision, and OSTick_SignalPtr of the cyclic timing trigger
+    OSTick_TimerId = timeSetEvent((UINT )(1000u / OS_TICKS_PER_SEC),
+                                (UINT) OSTick_TimerCap.wPeriodMin,
                                 (LPTIMECALLBACK) OSTick_SignalPtr,
-                                (DWORD_PTR     ) NULL,
-                                (UINT          )(TIME_PERIODIC | TIME_CALLBACK_EVENT_SET));
+                                (DWORD_PTR) NULL,
+                                (UINT )(TIME_PERIODIC | TIME_CALLBACK_EVENT_SET));
 
     ...
 
 }
 ```
 
-在上面的代码里，创建了`OSTick_Thread`，设置好了winmm提供的循环定时触发，定时触发的时间片服务函数等待的事件。  
-为了让`OSTick_Thread`能定时唤醒，`OSTickW32()`内应该有死循环以及等待`OSTick_SignalPtr`事件。  
+In the above code, the `OSTick_Thread` is created, and the loop timing trigger provided by winmm is set up, and the time slice service function waits for the timing trigger event.
+In order for `OSTick_Thread` to wake up regularly, there should be an endless loop in `OSTickW32()` and waiting for `OSTick_SignalPtr` event.
 
 ```c
 static  DWORD  WINAPI  OSTickW32 (LPVOID  p_arg)
@@ -90,21 +89,21 @@ static  DWORD  WINAPI  OSTickW32 (LPVOID  p_arg)
     HANDLE       wait_signal[2];
     CPU_SR_ALLOC();
 
-    // 等待OSTick_SignalPtr事件，以及等待系统终止的事件
+    // Waiting for the OSTick_SignalPtr event, and the event waiting for the system to terminate
     wait_signal[0] = OSTerminate_SignalPtr;
     wait_signal[1] = OSTick_SignalPtr;
 
     terminate = DEF_FALSE;
     while (!terminate) {
         switch (WaitForMultipleObjects(2, wait_signal, FALSE, INFINITE)) {
-            // OSTick_SignalPtr 触发了
+            // OSTick_SignalPtr triggered
             case WAIT_OBJECT_0 + 1u:
-                // 重置一下这个事件，为下次触发准备
+                // Reset this event to prepare for the next trigger
                 ResetEvent(OSTick_SignalPtr);
-                // 更改进程状态，关中断
+                // Change process status, turn off interrupt
                 CPU_CRITICAL_ENTER();
                 suspended = OSIntCurTaskSuspend();
-                // 完成时间片更新的一些事
+                // Some things to complete the time slice update
                 if (suspended == DEF_TRUE) {
                     OSIntEnter();
                     OSTimeTick();
@@ -118,29 +117,29 @@ static  DWORD  WINAPI  OSTickW32 (LPVOID  p_arg)
 }
 ```
 
-### 进程管理
+### Process management
 
-进程管理依赖于底层的上下文切换。  
-传统硬件平台的上下文切换基本是寄存器入栈备份现场，任务堆栈出栈还原现场。  
-这里的上下文切换，依赖于操作系统提供的进程内线程切换，线程切换自带了上下文切换。  
-为了把μC/OS内的进程给操作系统作为线程管理，需要包装一下。  
+Process management depends on the underlying context switching.
+The context switching of traditional hardware platforms is basically registering the stack to the backup site, and the task stack popping to restore the site.
+The context switching here depends on the in-process thread switching provided by the operating system, and the thread switching comes with context switching.
+In order to manage the processes in μC/OS to the operating system as threads, it needs to be wrapped.  
 
 ```c
 typedef  struct  os_task_stk {
-    void                      *TaskArgPtr;        /* Task 参数数组指针      */
-    INT16U                     TaskOpt;           /* Task 选项             */
-    void                     (*Task)(void*);      /* Task 函数入口          */
-    HANDLE                     ThreadHandle;      /* Task 线程的句柄        */
-    DWORD                      ThreadID;          /* Task 线程的线程ID      */
-    volatile  OS_TASK_STATE    TaskState;         /* Task 线程的状态        */
-    HANDLE                     SignalPtr;         /* Task 线程的同步 信号   */
-    HANDLE                     InitSignalPtr;     /* Task 线程的创建 信号   */
-    CPU_BOOLEAN                Terminate;         /* Task 线程的结束 标志   */
-    OS_TCB                    *OSTCBPtr;          /* Task TCB指针          */
+void *TaskArgPtr; /* Task parameter array pointer */
+    INT16U TaskOpt; /* Task option */
+    void (*Task)(void*); /* Task function entry */
+    HANDLE ThreadHandle; /* Task thread handle */
+    DWORD ThreadID; /* Thread ID of Task thread */
+    volatile OS_TASK_STATE TaskState; /* State of Task thread */
+    HANDLE SignalPtr; /* Synchronization signal of Task thread */
+    HANDLE InitSignalPtr; /* Task thread creation signal */
+    CPU_BOOLEAN Terminate; /* End flag of Task thread */
+    OS_TCB *OSTCBPtr; /* Task TCB pointer */
 } OS_TASK_STK;
 ```
 
-在这个数据结构里，存储TCB外包装的线程各种信息，由于这些信息存储在它的任务堆栈里，它的赋初值在TCB初始化的任务堆栈初始化里完成。  
+In this data structure, various information about the thread wrapped by the TCB is stored. Since this information is stored in its task stack, its initial value is completed in the task stack initialization of the TCB initialization.
 
 ```c
 OS_STK  *OSTaskStkInit (void  (*task)(void  *pd), void  *p_arg, OS_STK  *ptos, INT16U  opt)
@@ -164,7 +163,7 @@ OS_STK  *OSTaskStkInit (void  (*task)(void  *pd), void  *p_arg, OS_STK  *ptos, I
 }
 ```
 
-在`OSTaskStkInit()`随后执行的`OS_TCBInit()`里，借助`OSTCBInitHook(ptcb);`里完成对该task的外包装进一步初始化。  
+In the `OS_TCBInit()` that is executed after `OSTaskStkInit()`, the package of the task is further initialized with the help of `OSTCBInitHook(ptcb);`.
 
 ```c
 void  OSTCBInitHook (OS_TCB  *p_tcb)
@@ -172,24 +171,24 @@ void  OSTCBInitHook (OS_TCB  *p_tcb)
     OS_TASK_STK  *p_stk;
     p_stk = (OS_TASK_STK *)p_tcb->OSTCBStkPtr;
 
-    // Task 线程的同步信号，实际上切换到这个任务的线程就是靠这个事件通知的
-    p_stk->SignalPtr = CreateEvent(NULL, FALSE, FALSE, NULL); 
+    // The synchronization signal of the Task thread, actually the thread that switches to this task is notified by this event
+    p_stk->SignalPtr = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-    // Task 线程的创建完成信号，
+    // The creation of Task thread is completed signal,
     p_stk->InitSignalPtr = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    // Task 线程的句柄，把OSTaskW32这个任务包装函数绑定到线程
+    // The handle of the Task thread, bind the task wrapper function OSTaskW32 to the thread
     p_stk->ThreadHandle = CreateThread(NULL, 0, OSTaskW32, p_tcb, CREATE_SUSPENDED, &p_stk->ThreadID);
 
-    // 设置以下当前状态，创建完毕但还没运行过
+    // Set the following current state, created but not run
     p_stk->TaskState = STATE_CREATED;
     p_stk->OSTCBPtr  = p_tcb;
 
 }
 ```
 
-还差一点，task的内部函数就可以开始运行了。在任务调度开始之后，完成下面的这一点工作。  
-顺序为：`OSTCBInitHook()`->`OSCtxSw()`->`OSTaskW32()`->`OSCtxSw()`->`OSTaskW32()`->END  
+Almost, the internal function of the task can start running. After the task scheduling starts, complete the following work.
+The order is: `OSTCBInitHook()`->`OSCtxSw()`->`OSTaskW32()`->`OSCtxSw()`->`OSTaskW32()`->END
 
 ```c
 static  DWORD  WINAPI  OSTaskW32 (LPVOID  p_arg)
@@ -199,22 +198,22 @@ static  DWORD  WINAPI  OSTaskW32 (LPVOID  p_arg)
     p_tcb = (OS_TCB      *)p_arg;
     p_stk = (OS_TASK_STK *)p_tcb->OSTCBStkPtr;
 
-    // 等待task被首次被调度到，等到了再往后执行
-    // 这个等待，使得回到前面执行OSCtxSw的线程上
+    // Wait for the task to be scheduled for the first time, and then execute it later
+    // This wait makes it return to the thread that executed OSCtxSw before
     p_stk->TaskState = STATE_SUSPENDED;
     WaitForSingleObject(p_stk->SignalPtr, INFINITE);
 
-    // 给线程设置个名字，便于IDE调试
+    // Set a name for the thread to facilitate IDE debugging
     OSSetThreadName(p_stk->ThreadID, p_tcb->OSTCBTaskName);
 
-    // 等待到了，标记任务已经初始化完毕，准备好被正式调度了
+    // Waiting, the marking task has been initialized and is ready to be officially scheduled
     p_stk->TaskState = STATE_RUNNING;
-    SetEvent(p_stk->InitSignalPtr); 
+    SetEvent(p_stk->InitSignalPtr);
 
-    // 执行task的函数
+    // Function to execute task
     p_stk->Task(p_stk->TaskArgPtr);
 
-    // 如果上面的函数执行完毕返回了，就要删除自己
+    // If the above function returns after execution, you must delete yourself
     OSTaskDel(p_tcb->OSTCBPrio); 
     return (0u);
 }
@@ -234,24 +233,24 @@ void  OSCtxSw (void)
     OSTCBCur  = OSTCBHighRdy;
     OSPrioCur = OSPrioHighRdy;
 
-    // 当前的老任务状态位改为挂起，但是没有入栈这个操作，因为保存上下文由做线程切换的操作系统完成
+    // The current status of the old task is changed to suspended, but there is no stacking operation, because the saving context is done by the operating system that performs thread switching
     if (p_stk->TaskState == STATE_RUNNING) {
-        p_stk->TaskState  = STATE_SUSPENDED;
+        p_stk->TaskState = STATE_SUSPENDED;
     }
 
     p_stk_new = (OS_TASK_STK *)OSTCBHighRdy->OSTCBStkPtr;
     switch (p_stk_new->TaskState) {
         case STATE_CREATED:
-            // 刚创建好，需要OSTaskW32()来进一步初始化
+            // Just created, OSTaskW32() is needed for further initialization
             ResumeThread(p_stk_new->ThreadHandle);
-            // 等待这个任务的初始化完毕的事件，然后设置SignalPtr这个事件使得这个task的线程处于就绪
-            // 原型：SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
+            // Wait for the event that the initialization of this task is complete, and then set the SignalPtr event to make the thread of this task ready
+            // Prototype: SignalObjectAndWait(hObjectToSignal, hObjectToWaitOn, dwMilliseconds, bAlertable);
             SignalObjectAndWait(p_stk_new->SignalPtr, p_stk_new->InitSignalPtr, INFINITE, FALSE);
             break;
 
 
         case STATE_SUSPENDED:
-            // 设置SignalPtr这个事件，这个task的线程处于就绪
+            // Set the SignalPtr event, the thread of this task is ready
             p_stk_new->TaskState = STATE_RUNNING;
             SetEvent(p_stk_new->SignalPtr);
             break;
@@ -271,21 +270,21 @@ void  OSCtxSw (void)
 
         CPU_CRITICAL_EXIT();
 
-        /* ExitThread() never returns.  */
-        ExitThread(0u);  
+        /* ExitThread() never returns. */
+        ExitThread(0u);
         return;
     }
     CPU_CRITICAL_EXIT();
-    // 究竟是谁在等待SignalPtr这个事件，难道不是做一些切换的事情吗
+    // Who is waiting for the SignalPtr event, isn’t it doing some switching?
     WaitForSingleObject(p_stk->SignalPtr, INFINITE);
     CPU_CRITICAL_ENTER();
 }
 ```
 
-线程切换肯定是把控制权给等待这个型号的线程，自己等自己是为什么呢？  
-于是看了下线程的函数调用堆栈：  
+Thread switching must give control to the thread waiting for this model. Why do you wait for yourself?
+So I looked at the function call stack of the thread:
 
 ![thread-stack](./media/tcb-thread-stack.png)
 
-这是在等其他线程，设置自己线程的`SignalPtr`，让自己线程继续运行。
+This is waiting for other threads to set the `SignalPtr` of your own thread and let your own thread continue to run.
 
